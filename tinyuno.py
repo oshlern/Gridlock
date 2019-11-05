@@ -46,6 +46,18 @@ def generate_win_cond():
                 return "2 {}s must each have 3 {} cards".format(region, color)
 
 
+"""
+Places and cards are classes
+A place has neighbors and its card as attributes. 
+    method to get neighbors that takes in list of already visited places (make sure list)
+A card has a place, color, and number as attribute
+    Recursively evaluate
+A win condition should have 2 parts:
+    1) take in whole board, select possible regions
+    2) loop over regions, test if win condition is met
+"""
+
+
 
 # def generate_sum():
 
