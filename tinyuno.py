@@ -6,7 +6,6 @@ import random
 #     "A row and a col sum to ",
 #     "Sum is divisible by",
 #     "Two rows have the same sum",
-    
 # ]
 
 # color_condition = [
@@ -20,8 +19,6 @@ def generate_win_cond():
     cond_type = random.choice(["numbers", "colors"])
     if cond_type == "numbers":
         sub_type_options = ["sum", "multiple", "consecutive"]
-        # if num_targets:
-            # sub_type_options += ["same sum"]
         num_type = random.choice(sub_type_options)
         if num_type == "sum":
             amount = random.choice(list(range(5,11)) + list(range(25, 30)))
