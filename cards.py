@@ -18,6 +18,8 @@ class Card:
         return list(set(sum([place.card.get_potential_numbers(places_visited + [self.place]) for place in self.place.neighbors if place not in places_visited], [])))
     def get_neighbor_pairs(self, places_visited = []):
         return list(set(sum([place.card.get_potential_pairs(places_visited + [self.place]) for place in self.place.neighbors if place not in places_visited], [])))
+    def __repr__(self):
+        return "{0} {1}".format(self.s_color, self.s_id)
 
 
 class NumberCard(Card):

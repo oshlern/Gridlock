@@ -14,23 +14,25 @@ class Board:
         self.deck = Deck()
         self.width = width
         self.height = height
-        self.array = [[Place() for i in range(height)] for j in range(width)]
+        self.array = [[Place() for j in range(width)] for i in range(height)]
 
-        for i in range(width):
-            for j in range(height):
+        for i in range(height):
+            for j in range(width):
                 neighbors = []
                 if i > 0:
                     neighbors.append(self.array[i-1][j])
-                if i < self.width - 1:
+                if i < height - 1:
                     neighbors.append(self.array[i+1][j])
                 if j > 0:
                     neighbors.append(self.array[i][j-1])
-                if j < self.height - 1:
+                if j < width - 1:
                     neighbors.append(self.array[i][j+1])
                 self.array[i][j].neighbors = neighbors
 
                 self.deck.draw(self.array[i][j])
 
+    def __str__(self):
+        return '\n'.join('\t|'.join([str(place.card) for place in row]).expandtabs(16) for row in self.array)
 
 class Deck:
     colors = ["Red", "Green", "Blue", "Yellow"]
