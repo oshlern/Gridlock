@@ -10,26 +10,29 @@ class Place:
         card.place = self
 
 class Board:
-    def __init__(self, width, height):
-        self.deck = Deck()
-        self.width = width
-        self.height = height
-        self.array = [[Place() for j in range(width)] for i in range(height)]
+    def __init__(self, size, game):
+        self.deck = game.deck
+        self.size = size
+        self.array = [[Place() for j in range(size)] for i in range(size)]
 
-        for i in range(height):
-            for j in range(width):
+        for i in range(size):
+            for j in range(size):
                 neighbors = []
                 if i > 0:
                     neighbors.append(self.array[i-1][j])
-                if i < height - 1:
+                if i < size - 1:
                     neighbors.append(self.array[i+1][j])
                 if j > 0:
                     neighbors.append(self.array[i][j-1])
-                if j < width - 1:
+                if j < size - 1:
                     neighbors.append(self.array[i][j+1])
                 self.array[i][j].neighbors = neighbors
 
                 self.deck.draw(self.array[i][j])
+
+        self.rows = [row for row in self.array] + [[self.array[i][j] for i in range(size)] for j in range(size)]
+        self.squares = [[self.array[i][j], self.array[i+1][j], self.array[i][j+1], self.array[i+1][j+1]] for i in range(size-1) for j in range(size-1)]
+        self.diagonals = [[self.array[i][i] for i in range(size)], [self.array[size-1-i][i] for i in range(size)]]
 
     def __str__(self):
         return '\n'.join('\t|'.join([str(place.card) for place in row]).expandtabs(16) for row in self.array)
@@ -57,9 +60,19 @@ class Deck:
         card.place = self
 
 class Hand:
+    def __init__(self, num_cards, deck):
+        self.num_cards = num_cards
+        self.deck = deck
+        self.cards = []
+        for num in range(num_cards):
+            deck.draw(self)
+
     def set_card(self, card):
         self.cards.append(card)
         card.place = self
+
+    def __str__(self):
+        return '|'.join([str(card) for card in self.cards])
 
 
 
