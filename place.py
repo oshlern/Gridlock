@@ -35,7 +35,19 @@ class Board:
         self.diagonals = [[self.array[i][i] for i in range(size)], [self.array[size-1-i][i] for i in range(size)]]
 
     def __str__(self):
-        return '\n'.join('\t|'.join([str(place.card) for place in row]).expandtabs(16) for row in self.array)
+        return '   ' + '\t '.join([str(i) for i in range(self.size)]).expandtabs(16) + '\n' \
+                + '\n'.join(str(i) + ' |' + '\t|'.join([str(place.card) for place in row]).expandtabs(16) for i,row in enumerate(self.array))
+
+    def place_card(self, hand_card, i, j):
+        location = self.array[i][j]
+        board_card = location.card
+
+        if not swappable(hand_card, board_card):
+            raise TypeError("Cannot swap {} and {}".format(hand_card, board_card))
+
+        hand_card.place.cards.remove(hand_card)
+        location.set_card(hand_card)
+        self.deck.set_card(board_card)
 
 class Deck:
     colors = ["Red", "Green", "Blue", "Yellow"]

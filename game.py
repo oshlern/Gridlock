@@ -3,29 +3,27 @@ from place import *
 from player import *
 import itertools
 
-# print(locals())
-# exec("x = 2\ndef y():\n\tpass")
-# print(locals())
-# print(x)
-# print(y)
-# def a():
-#     exec('def win_cond(board):\n\tfor region in board.squares:\n\t\tif 9 in get_potential_sums(squares) or 10 in get_potential_sums(squares) or 8 in get_potential_sums(squares):\n\t\t\treturn True\n\treturn False')
-#     print(win_cond)
-# a()
-
 class Game():
     def __init__(self, num_players, b_dimension):
         self.deck = Deck()
         self.board = Board(b_dimension, self)
         self.players = [Player("Player {}".format(num), self) for num in range (num_players)]
-        self.set_win_conditions(num_players)
-    
+        self.set_win_conditions()
+
     def set_board(self, board):
         self.board = board
 
-    def set_win_conditions(self, num_players):
-        self.win_conditions = [self.generate_win_condition(), self.generate_win_condition()]
-        for i in range(num_players):
+    def set_win_conditions(self):
+        self.win_conditions = []
+        for _ in range(2):
+            win_cond = self.generate_win_condition()
+            while win_cond(self.board):
+                # print("ditching:", win_cond.description) #testing
+                win_cond = self.generate_win_condition()
+            self.win_conditions.append(win_cond)
+            
+        # self.win_conditions = [self.generate_win_condition(), self.generate_win_condition()]
+        for i in range(len(self.players)):
             self.players[i].set_win_condition(self.win_conditions[i%2])
 
     def generate_win_condition(self):
@@ -52,30 +50,39 @@ class Game():
                 win_cond_str += (" any([sum % {0} == 0 for sum in get_potential_sums(region)]):\n").format(num)
             elif num_type == "consecutive":
                 description += " must have consecutive numbers"
-                win_cond_str += (" is_consecutive(region):\n").format(region)
+                win_cond_str += " is_consecutive(region):\n"
                 #invalid syntax error on this version:
                 #any([all([sorted(reg)[i] < sorted(reg)[i+1] and sorted(reg)[i] - sorted(reg)[i+1] == -1 for i in range(len(reg)-1)]) for reg in board.{0}])
         elif cond_type == "colors":
             color_type = random.choice(["num of 1", "1 of each"])
             if color_type == "1 of each":
                 description += " must have one of each color"
-                colors = ["'red'", "'green'", "'blue'", "'yellow'"]
-                win_cond_str += " any([all([color in region_colors for color in colors]) for region_colors in get_potential_colors(region)]):\n"
+                win_cond_str += " has_one_of_each(region):\n"
             elif color_type == "num of 1":
-                color = random.choice(["red", "green", "blue", "yellow", "special"])
+                color = random.choice(["'Red'", "'Green'", "'Blue'", "'Yellow'", "'special'"])
                 num = random.choice(range(2,5))
                 description += " must have {0} {1} cards".format(num, color)
                 win_cond_str += " count_color(region, {0}) == {1}:\n".format(color, num)
         win_cond_str += ("\t\t\tcount +=1\n"
                     "\treturn count >= {0}").format(num_targets)
-        
-        print("DEGBUG:", win_cond_str.__repr__()) #for testing, comment in final version
-        exec(win_cond_str, globals(), locals()) #not working for some reason
+
+        # print("DEBUG:", win_cond_str) #for testing, comment in final version
+        # print("DEBUG:", locals())
+        exec(win_cond_str, globals(), locals())
         # print(locals()['win_cond'])
         win_cond = locals()['_win_cond']
         win_cond.description = description
         return win_cond
 
+    def play(self):
+        player_num = -1
+        while not any([win_cond(self.board) for win_cond in self.win_conditions]):
+            player_num = (player_num + 1) % len(self.players)
+            self.players[player_num].take_turn()
+        if self.win_conditions[0](self.board):
+            print("Players {} win!".format([i for i in range(0,len(self.players),2)]))
+        if self.win_conditions[1](self.board):
+            print("Players {} win!".format([i for i in range(1,len(self.players),2)]))
 
 
 
@@ -95,6 +102,10 @@ def count_color(region, color):
     if color == "special":
         return sum([place.card.special for place in region])
     return sum([color in place.card.get_potential_colors() for place in region])
+
+def has_one_of_each(region):
+    colors = ["Red", "Green", "Blue", "Yellow"]
+    return all([count_color(region, color) >= 1 for color in colors])
 
 def is_consecutive(region):
     any_consecutive = False

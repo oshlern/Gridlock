@@ -100,3 +100,10 @@ class PlusFourCard(Card):
     def get_potential_pairs(self, places_visited = []):
         neighbor_pairs = self.get_neighbor_pairs(places_visited)
         return [(color, number + 4) for color,number in neighbor_pairs] + [(color, number - 4) for color,number in neighbor_pairs]
+
+def swappable(card1, card2):
+    if card1.s_color == "Wild" or card2.s_color == "Wild":
+        return True
+    if card1.s_color == card2.s_color or card1.s_id == card2.s_id:
+        return True
+    return False
