@@ -5,9 +5,9 @@ class Player():
         self.hand = Hand(5, game.deck)
         self.name = name
         
-    def set_win_condition(win_condition):
+    def set_win_condition(self, win_condition):
         self.win_condition = win_condition
-        self.display(win_condition_description)
+        self.display(win_condition.description)
 
     def display(self, string):
         print("{}: {}".format(self.name, string))
