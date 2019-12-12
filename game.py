@@ -4,11 +4,12 @@ from player import *
 import itertools
 
 class Game():
-    def __init__(self, num_players, b_dimension):
+    def __init__(self, num_players, b_dimension, goal):
         self.deck = Deck()
         self.board = Board(b_dimension, self)
         self.players = [Player("Player {}".format(num), self) for num in range (num_players)]
         self.set_win_conditions()
+        self.goal = goal
 
     def set_board(self, board):
         self.board = board
@@ -21,7 +22,7 @@ class Game():
                 # print("ditching:", win_cond.description) #testing
                 win_cond = self.generate_win_condition()
             self.win_conditions.append(win_cond)
-            
+
         # self.win_conditions = [self.generate_win_condition(), self.generate_win_condition()]
         for i in range(len(self.players)):
             self.players[i].set_win_condition(self.win_conditions[i%2])
@@ -30,6 +31,7 @@ class Game():
         region = random.choice(["rows", "diagonals", "squares"])
         num_targets = random.choice([1,2])
         cond_type = random.choice(["numbers", "colors"])
+        point_value = 1
 
         win_cond_str = ("def _win_cond(board):\n"
                         "\tcount = 0\n"
@@ -72,6 +74,7 @@ class Game():
         # print(locals()['win_cond'])
         win_cond = locals()['_win_cond']
         win_cond.description = description
+        win_cond.point_value = point_value
         return win_cond
 
     def play(self):
@@ -80,9 +83,22 @@ class Game():
             player_num = (player_num + 1) % len(self.players)
             self.players[player_num].take_turn()
         if self.win_conditions[0](self.board):
-            print("Players {} win!".format([i for i in range(0,len(self.players),2)]))
+            print("------Players {} win this round!".format([i for i in range(0,len(self.players),2)]))
+            for i in range(0, len(self.players), 2):
+                self.players[i].points += self.win_conditions[0].point_value
         if self.win_conditions[1](self.board):
-            print("Players {} win!".format([i for i in range(1,len(self.players),2)]))
+            print("------Players {} win this round!".format([i for i in range(1,len(self.players),2)]))
+            for i in range(1, len(self.players), 2):
+                self.players[i].points += self.win_conditions[1].point_value
+    
+    def play_with_points(self):
+        self.play()
+        while not any([player.points >= self.goal for player in self.players]):
+            self.set_win_conditions()
+            self.play()
+        for player in self.players:
+            if player.points >= self.goal:
+                print("------{0} wins the game!".format(player.name))
 
 
 

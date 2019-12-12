@@ -5,6 +5,7 @@ class Player():
         self.hand = Hand(5, game.deck)
         self.name = name
         self.game = game
+        self.points = 0
 
     def set_win_condition(self, win_condition):
         self.win_condition = win_condition
@@ -27,7 +28,7 @@ class Player():
             try:
                 card = self.hand.cards[int(inp)]
                 invalid1 = False
-            except IndexError as e:
+            except (IndexError, ValueError) as e:
                 self.display("invalid card")
                 print(e)
         invalid2 = True
@@ -37,7 +38,7 @@ class Player():
             try: 
                 self.game.board.place_card(card, int(coord[0]), int(coord[1]))
                 invalid2 = False
-            except (TypeError, IndexError) as e:
+            except (TypeError, IndexError, ValueError) as e:
                 self.display("invalid placement")
                 print(e)
         self.game.deck.draw(self.hand)
