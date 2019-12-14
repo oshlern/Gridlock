@@ -1,6 +1,7 @@
 from cards import *
 from place import *
 from player import *
+from graphics import *
 import itertools
 
 class Game():
@@ -10,6 +11,7 @@ class Game():
         self.players = [Player("Player {}".format(num), self) for num in range (num_players)]
         self.set_win_conditions()
         self.goal = goal
+        self.graphics = Graphics(self.board)
 
     def set_board(self, board):
         self.board = board

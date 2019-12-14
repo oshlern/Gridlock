@@ -23,6 +23,10 @@ class Card:
 
 
 class NumberCard(Card):
+    def __init__(self, place, s_color, s_id):
+        super().__init__(place, s_color, s_id)
+        self.image_file = "uno_card-{0}{1}.png".format(s_color, s_id).lower()
+
     def get_potential_colors(self, places_visited = []):
         return [self.s_color]
     def get_potential_numbers(self, places_visited = []):
@@ -34,6 +38,7 @@ class ReverseCard(Card):
     special = True
     def __init__(self, place, s_color):
         super().__init__(place, s_color, s_id = "Reverse")
+        self.image_file = "uno_card-{0}reverse.png".format(s_color).lower()
         
     def get_potential_colors(self, places_visited = []):
         return [self.s_color]
@@ -51,6 +56,7 @@ class SkipCard(Card):
 
     def __init__(self, place, s_color):
         super().__init__(place, s_color, s_id = "Skip")
+        self.image_file = "uno_card-{0}skip.png".format(s_color).lower()
         
     def get_potential_colors(self, places_visited = []):
         return [self.s_color]
@@ -64,6 +70,7 @@ class PlusTwoCard(Card):
 
     def __init__(self, place, s_color):
         super().__init__(place, s_color, s_id = "PlusTwo")
+        self.image_file = "uno_card-{0}draw2.png".format(s_color).lower()
 
     def get_potential_colors(self, places_visited = []):
         return [self.s_color]
@@ -75,6 +82,7 @@ class PlusTwoCard(Card):
 
 class WildCard(Card):
     special = True
+    image_file = "uno_card-wildchange.png"
 
     def __init__(self, place):
         super().__init__(place, s_color = "Wild", s_id = "Wild")
@@ -88,6 +96,7 @@ class WildCard(Card):
 
 class PlusFourCard(Card):
     special = True
+    image_file = "uno_card-wilddraw4.png"
 
     def __init__(self, place):
         super().__init__(place, s_color = "Wild", s_id = "PlusFour")
