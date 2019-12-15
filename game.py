@@ -5,13 +5,21 @@ from graphics import *
 import itertools
 
 class Game():
-    def __init__(self, num_players, b_dimension, goal):
+    def __init__(self, players=2, b_dimension = 4, goal = 3):
+        self.goal = goal
         self.deck = Deck()
         self.board = Board(b_dimension, self)
-        self.players = [Player("Player {}".format(num), self) for num in range (num_players)]
-        self.set_win_conditions()
-        self.goal = goal
-        self.graphics = Graphics(self.board)
+
+        if type(players) == int:
+            names = ["Player {}".format(num) for num in range(players)]
+        elif type(players) == list:
+            names = players
+        self.num_players = len(names)
+        self.players = [Player(names[num], self, num%2) for num in range(self.num_players)]
+        self.teams = [[self.players[i] for i in range(0,self.num_players,2)], [self.players[i] for i in range(1,self.num_players,2)]]
+
+        self.graphics = Graphics(self, fullscreen=False)
+        # self.graphics.display_board()
 
     def set_board(self, board):
         self.board = board
@@ -21,19 +29,18 @@ class Game():
         for _ in range(2):
             win_cond = self.generate_win_condition()
             while win_cond(self.board):
-                # print("ditching:", win_cond.description) #testing
                 win_cond = self.generate_win_condition()
             self.win_conditions.append(win_cond)
-
-        # self.win_conditions = [self.generate_win_condition(), self.generate_win_condition()]
-        for i in range(len(self.players)):
+        if self.win_conditions[0].description == self.win_conditions[1].description:
+            self.set_win_conditions()
+        for i in range(self.num_players):
             self.players[i].set_win_condition(self.win_conditions[i%2])
 
     def generate_win_condition(self):
         region = random.choice(["rows", "diagonals", "squares"])
         num_targets = random.choice([1,2])
         cond_type = random.choice(["numbers", "colors"])
-        point_value = 1
+        point_value = num_targets
 
         win_cond_str = ("def _win_cond(board):\n"
                         "\tcount = 0\n"
@@ -66,7 +73,7 @@ class Game():
                 color = random.choice(["'Red'", "'Green'", "'Blue'", "'Yellow'", "'special'"])
                 num = random.choice(range(2,5))
                 description += " must have {0} {1} cards".format(num, color)
-                win_cond_str += " count_color(region, {0}) == {1}:\n".format(color, num)
+                win_cond_str += " has_num_color(region, {0}, {1}):\n".format(color, num)
         win_cond_str += ("\t\t\tcount +=1\n"
                     "\treturn count >= {0}").format(num_targets)
 
@@ -79,28 +86,52 @@ class Game():
         win_cond.point_value = point_value
         return win_cond
 
-    def play(self):
+    def play_round(self):
         player_num = -1
+        self.set_win_conditions()
+        self.graphics.display_always()
         while not any([win_cond(self.board) for win_cond in self.win_conditions]):
-            player_num = (player_num + 1) % len(self.players)
+            player_num = (player_num + 1) % self.num_players
+            self.graphics.display_player(self.players[player_num])
             self.players[player_num].take_turn()
-        if self.win_conditions[0](self.board):
-            print("------Players {} win this round!".format([i for i in range(0,len(self.players),2)]))
-            for i in range(0, len(self.players), 2):
-                self.players[i].points += self.win_conditions[0].point_value
-        if self.win_conditions[1](self.board):
-            print("------Players {} win this round!".format([i for i in range(1,len(self.players),2)]))
-            for i in range(1, len(self.players), 2):
-                self.players[i].points += self.win_conditions[1].point_value
-    
+        for team_num in range(2):
+            if self.win_conditions[team_num](self.board):
+                self.points[team_num] += self.win_conditions[team_num].point_value
+                self.graphics.display_status("{} win this round!".format(', '.join([player.name for player in self.teams[team_num]])))
+                print("------{} win this round!".format([player.name for player in self.teams[team_num]]))
+                self.graphics.display_instruction("click for next round")
+                self.graphics.wait_for_click()
+
+        # if self.win_conditions[0](self.board):
+        #     print("------Players {} win this round!".format([i for i in range(0,self.num_players,2)]))
+        #     self.graphics.display_message("Players {} win this round!".format([i for i in range(0,self.num_players,2)]))
+        #     for i in range(0, self.num_players, 2):
+        #         self.players[i].points += self.win_conditions[0].point_value
+        # if self.win_conditions[1](self.board):
+        #     print("------Players {} win this round!".format([i for i in range(1,self.num_players,2)]))
+        #     self.graphics.display_message("Players {} win this round!".format([i for i in range(1,self.num_players,2)]))
+            
+        #     for i in range(1, self.num_players, 2):
+        #         self.players[i].points += self.win_conditions[1].point_value
+
     def play_with_points(self):
-        self.play()
-        while not any([player.points >= self.goal for player in self.players]):
-            self.set_win_conditions()
-            self.play()
-        for player in self.players:
-            if player.points >= self.goal:
-                print("------{0} wins the game!".format(player.name))
+        self.points = [0, 0]
+        while not any([team_points >= self.goal for team_points in self.points]):
+            self.play_round()
+        if self.points[0] >= self.goal and self.points[1]< self.goal:
+            winners = ', '.join([player.name for player in self.teams[0]])
+            print("------{} win the game!".format(winners))
+            # self.graphics.display_status("{} win the game!".format(winners))
+        elif self.points[1] >= self.goal and self.points[0] < self.goal:
+            winners = ', '.join([player.name for player in self.teams[1]])
+            print("------Players {} win the game!".format(winners))
+            # self.graphics.display_status("{} win the game!".format(winners))
+        else:
+            winners = ', '.join([player.name for player in self.players])
+            print("it's a tie!")
+            # self.graphics.display_status("its a tie!")
+
+        self.graphics.display_win(winners)
 
 
 
@@ -116,14 +147,20 @@ def get_potential_sums(region):
 def get_potential_colors(region):
     return itertools.product(*[place.card.get_potential_colors() for place in region])
 
-def count_color(region, color):
+def has_num_color(region, color, num):
     if color == "special":
         return sum([place.card.special for place in region])
-    return sum([color in place.card.get_potential_colors() for place in region])
+    for potential_colors in get_potential_colors(region):
+        if sum([color == potential_color for potential_color in potential_colors]) == num:
+            return True
+    return False
 
 def has_one_of_each(region):
     colors = ["Red", "Green", "Blue", "Yellow"]
-    return all([count_color(region, color) >= 1 for color in colors])
+    for potential_colors in get_potential_colors(region):
+        if all([color in potential_colors for color in colors]):
+            return True
+    return False
 
 def is_consecutive(region):
     any_consecutive = False
@@ -139,6 +176,11 @@ def is_consecutive(region):
             any_consecutive = True
     return any_consecutive
 
+
+
+if __name__ == "__main__":
+    game = Game()
+    game.play_with_points()
 
 
 # region = place.attrs[region_str]

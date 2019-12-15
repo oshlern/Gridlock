@@ -38,16 +38,24 @@ class Board:
         return '   ' + '\t '.join([str(i) for i in range(self.size)]).expandtabs(16) + '\n' \
                 + '\n'.join(str(i) + ' |' + '\t|'.join([str(place.card) for place in row]).expandtabs(16) for i,row in enumerate(self.array))
 
-    def place_card(self, hand_card, i, j):
-        location = self.array[i][j]
-        board_card = location.card
+    def place_card(self, hand_card, i, j, board_reverse = False):
+        og_place = hand_card.place
+        destination = self.array[i][j]
+        board_card = destination.card
 
         if not swappable(hand_card, board_card):
             raise TypeError("Cannot swap {} and {}".format(hand_card, board_card))
 
-        hand_card.place.cards.remove(hand_card)
-        location.set_card(hand_card)
-        self.deck.set_card(board_card)
+        destination.set_card(hand_card)
+        if board_reverse:
+            og_place.set_card(board_card)
+        else:
+            og_place.cards.remove(hand_card)
+            self.deck.set_card(board_card)
+    
+    def is_reverse(self, i, j):
+        return isinstance(self.array[i][j].card, ReverseCard)
+
 
 class Deck:
     colors = ["Red", "Green", "Blue", "Yellow"]
