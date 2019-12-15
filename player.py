@@ -1,5 +1,6 @@
 from place import *
 
+use_terminal = False
 class Player():
     def __init__(self, name, game, team_num):
         self.hand = Hand(5, game.deck)
@@ -23,8 +24,8 @@ class Player():
         print(self.game.board)
         invalid1 = True
         while invalid1:
-            self.display("which card would you like to play from your hand?")
-            self.game.graphics.display_instruction("which card would you like to play from your hand?")
+            self.display("which card would you like to play?")
+            self.game.graphics.display_instruction("which card would you like to play?")
             #inp = input()
             on_board, on_hand, on_deck, coord = self.game.graphics.get_card_selection()
             board_reverse = False
@@ -68,6 +69,7 @@ class Player():
                     print(e)
                 except TypeError as e:
                     self.game.graphics.display_status(str(e))
+                    continue
 
             if invalid2:
                 print("invalid selection, click a card on the board")

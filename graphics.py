@@ -1,7 +1,6 @@
 import pygame
 import os, time, sys
 
-frame_delay = 100
 card_ratio = 82/117
 clock = pygame.time.Clock()
 fps = 30
@@ -27,6 +26,8 @@ class Graphics:
         self.board_x, self.board_y = 20, 20
         self.hand_x, self.hand_y = self.board_x, self.screen_height - self.board_y - self.card_height
         self.deck_x, self.deck_y = self.hand_x + (1+hand_size)*self.card_width, self.hand_y
+        self.deck_width = self.card_width*0.4
+
         self.team_colors = [(40,60,255), (255,60,40)]
 
         self.image_library = {name: self.scale(pygame.image.load("uno_cards/" + name)) for name in os.listdir("uno_cards/")}
@@ -44,7 +45,10 @@ class Graphics:
 
     def display_deck(self):
         card_image = self.image_library["uno_card-back.png"]
-        self.screen.blit(card_image, (self.deck_x, self.deck_y))
+        num_displayed = 4
+        for i in range(num_displayed):
+            offset = int(i/num_displayed * self.deck_width)
+            self.screen.blit(card_image, (self.deck_x + offset, self.deck_y + i))
 
     def clear_background(self):
         pygame.draw.rect(self.screen, (0,0,0), pygame.Rect(0, 0, self.screen_width, self.screen_height))
@@ -163,7 +167,7 @@ class Graphics:
     def translate_coord(self, x, y):
         board_i, board_j = (x-self.board_x)//self.card_width, (y-self.board_y)//self.card_height
         hand_i, hand_j = (x-self.hand_x)//self.card_width, (y-self.hand_y)//self.card_height
-        deck_i, deck_j = (x-self.deck_x)//self.card_width, (y-self.deck_y)//self.card_height
+        deck_i, deck_j = (x-self.deck_x)//int(self.card_width+self.deck_width), (y-self.deck_y)//self.card_height
         on_board, on_hand, on_deck, coord = False, False, False, None
         if 0<=board_i<self.board.size and 0<=board_j<self.board.size:
             on_board = True
